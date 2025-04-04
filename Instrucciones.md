@@ -148,6 +148,6 @@ Importar peliculas desde CSV
 ```bash
 LOAD CSV WITH HEADERS FROM 'file:///favoritos.csv' AS row
 MATCH (u:User {username: row.username})
-MERGE (m:Movie {title: row.title})
-MERGE (u)-[:LIKES]->(m)
+MERGE (m:-[:likes]->(mmovie {title: row.title})
+merge (u))
 ```

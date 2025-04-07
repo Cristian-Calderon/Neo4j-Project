@@ -1,46 +1,40 @@
-// Estructura de la amistad en Neo4j
-
-(:User)-[:FRIENDS_WITH]->(:User)
-// Como es una amistad bidireccional, vamos a crear la relacion en ambos sentidos
-
-// Agregar amigos
-// Consulta Cypher
-MATCH (a:User {username: "pepe"}), (b:User {username: "maria"})
-MERGE (a)-[:FRIENDS_WITH]->(b)
-MERGE (b)-[:FRIENDS_WITH]->(a)
-
-
-// Esto aseguro que : pepe es amigo de maria, maria es amigo de pepe
-// Y NO SE CREAN DUPLICADOS SI YA SON AMIGOS
-
+// Agregar una relacion de amistad entre usuarios
+MATCH (u1:User {nick: "pepe"}), (u2:User {nick: "luis"})
+MERGE (u1)-[:AMIGO]->(u2)
+MERGE (u2)-[:AMIGO]->(u1);
 
 // Eliminar amigos
-MATCH (a:User {username: "pepe"})-[r:FRIENDS_WITH]-(b:User {username: "maria"})
-DELETE r
+MATCH (:User {nick: "pepe"})-[r:AMIGO]-(:User {nick: "luis"})
+DELETE r;
 
 
-// Ver amigos de amigos
+// Buscar amigos de un usuario
+MATCH (:User {nick: "pepe"})-[:AMIGO]-(friend)
+RETURN friend.nick, friend.email;
 
-MATCH (u:User {username: "pepe"})-[:FRIENDS_WITH]->(friend)
-RETURN friend.username
-
-
-
-// Ejemplo practico
-// Crea 2 usuarios si no los tienes
-MERGE (:User {username: "pepe", email: "pepe@email.com", password: "1234"})
-MERGE (:User {username: "maria", email: "maria@email.com", password: "abcd"})
-
-// Agregar amistad 
-MATCH (a:User {username: "pepe"}), (b:User {username: "maria"})
-MERGE (a)-[:FRIENDS_WITH]->(b)
-MERGE (b)-[:FRIENDS_WITH]->(a)
+// Peliculas que vieron tus amigos y vos no
+MATCH (me:User {nick: "pepe"})-[:AMIGO]-(friend)-[:AGREGO]->(movie:Pelicula)
+WHERE NOT (me)-[:AGREGO]->(movie)
+RETURN movie.titulo AS recomendada, collect(friend.nick) AS recomendadaPor, count(*) AS veces
+ORDER BY veces DESC
+LIMIT 10;
 
 
-// Ver amigos de pepe
-MATCH (u:User {username: "pepe"})-[:FRIENDS_WITH]->(friend)
-RETURN friend.username
+// Relacionarlo manualmente (por ejemplo)
+// cristianT y cristian son amigos
+MATCH (a:User {nick: "cristianT"}), (b:User {nick: "cristian"})
+MERGE (a)-[:AMIGO]->(b)
+MERGE (b)-[:AMIGO]->(a);
 
-// Eliminar amistad:
-MATCH (a:User {username: "pepe"})-[r:FRIENDS_WITH]-(b:User {username: "maria"})
-DELETE r
+// cristianT y cristianCalderon
+MATCH (a:User {nick: "cristianT"}), (b:User {nick: "cristianCalderon"})
+MERGE (a)-[:AMIGO]->(b)
+MERGE (b)-[:AMIGO]->(a);
+
+// pepe y cristian
+MATCH (a:User {nick: "pepe"}), (b:User {nick: "cristian"})
+MERGE (a)-[:AMIGO]->(b)
+MERGE (b)-[:AMIGO]->(a);
+
+
+
